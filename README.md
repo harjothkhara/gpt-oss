@@ -54,7 +54,7 @@ The **Interactive Code Helper** is a web-based AI-powered coding assistant that 
 
 ### 🌐 Live Demo
 
-> **[🔗 Try the Interactive Code Helper](https://your-deployment-url.vercel.app)** _(Demo mode with simulated responses)_
+> **[🔗 Try the Interactive Code Helper](https://gpt-oss-interactive-code-helper-pro.vercel.app)** _(Demo mode with simulated responses)_
 
 _For full AI-powered analysis with gpt-oss-20b, run locally following the instructions below._
 
@@ -63,20 +63,22 @@ _For full AI-powered analysis with gpt-oss-20b, run locally following the instru
 Experience the full power of GPT-OSS with real-time AI analysis:
 
 ```bash
-# Clone the repository
-git clone https://github.com/harjothkhara/gpt-oss.git
-cd gpt-oss
+# Clone the standalone Interactive Code Helper repository
+git clone https://github.com/harjothkhara/interactive-code-helper.git
+cd interactive-code-helper
 
-# Set up the Interactive Code Helper
-cd code_helper
-./setup.sh
+# Install dependencies
+pip install -r requirements.txt
 
 # Download the gpt-oss-20b model (optimized for local use)
-hf download openai/gpt-oss-20b --include "metal/*" --local-dir ../gpt-oss-20b/metal/
+pip install huggingface_hub[cli]
+huggingface-cli download openai/gpt-oss-20b --include "metal/*" --local-dir ../gpt-oss-20b/metal/
 
 # Start the application
-./run.sh
+python app.py --model-path ../gpt-oss-20b/metal/model.bin
 ```
+
+> **📦 Standalone Repository**: The Interactive Code Helper is now available as a [dedicated repository](https://github.com/harjothkhara/interactive-code-helper) for easier setup and deployment.
 
 **System Requirements:**
 
