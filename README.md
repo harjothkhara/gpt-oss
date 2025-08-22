@@ -21,6 +21,8 @@ We're releasing two flavors of these open models:
 Both models were trained using our [harmony response format][harmony] and should only be used with this format; otherwise, they will not work correctly.
 
 ## Table of Contents
+
+- [🚀 Interactive Code Helper](#-interactive-code-helper)
 - [Highlights](#highlights)
 - [Inference examples](#inference-examples)
 - [About this repository](#about-this-repository)
@@ -34,6 +36,72 @@ Both models were trained using our [harmony response format][harmony] and should
 - [Tools](#tools)
 - [Other details](#other-details)
 - [Contributing](#contributing)
+
+## 🚀 Interactive Code Helper
+
+**Experience GPT-OSS in action with our flagship application!**
+
+The **Interactive Code Helper** is a web-based AI-powered coding assistant that demonstrates the practical capabilities of GPT-OSS models. Built specifically to showcase how open-weight models can be deployed for real-world applications, it provides an intuitive interface for code analysis and learning.
+
+### ✨ Features
+
+- **📝 Code Explanation**: Get detailed breakdowns of how your code works, with explanations tailored to your programming level
+- **🔧 Code Improvement**: Receive actionable suggestions for better practices, optimization, and code quality
+- **🐛 Bug Detection**: Identify and fix potential issues before they become problems
+- **🎓 Interactive Learning**: Beginner-friendly tutorials and exercises to improve your coding skills
+- **🌐 Multi-Language Support**: Python, JavaScript, Java, C++, C#, Go, Rust, PHP, Ruby, and more
+- **🍎 Apple Silicon Optimized**: Native Metal backend for lightning-fast inference on M1/M2/M3 chips
+
+### 🌐 Live Demo
+
+> **[🔗 Try the Interactive Code Helper](https://your-deployment-url.vercel.app)** _(Demo mode with simulated responses)_
+
+_For full AI-powered analysis with gpt-oss-20b, run locally following the instructions below._
+
+### 💻 Local Installation
+
+Experience the full power of GPT-OSS with real-time AI analysis:
+
+```bash
+# Clone the repository
+git clone https://github.com/harjothkhara/gpt-oss.git
+cd gpt-oss
+
+# Set up the Interactive Code Helper
+cd code_helper
+./setup.sh
+
+# Download the gpt-oss-20b model (optimized for local use)
+hf download openai/gpt-oss-20b --include "metal/*" --local-dir ../gpt-oss-20b/metal/
+
+# Start the application
+./run.sh
+```
+
+**System Requirements:**
+
+- **Hardware**: macOS with Apple Silicon (M1/M2/M3/M4)
+- **Memory**: 8GB RAM minimum, 16GB recommended
+- **Storage**: ~15GB free disk space for model weights
+- **Software**: Python 3.12+, macOS 12.0+
+
+### 🎯 How It Works
+
+The Interactive Code Helper leverages **gpt-oss-20b** through a sophisticated pipeline:
+
+1. **Code Analysis**: Your code is processed using the model's reasoning capabilities
+2. **Context Understanding**: The model analyzes syntax, logic, and potential improvements
+3. **Intelligent Response**: Generates explanations, suggestions, or learning materials based on your selected analysis type
+4. **Real-time Inference**: Optimized Metal backend provides fast responses on Apple Silicon
+
+This application demonstrates how GPT-OSS models can be integrated into practical developer tools, showcasing the potential for open-weight models in production environments.
+
+### 🛠️ Technical Architecture
+
+- **Backend**: Flask web application with Metal-optimized inference
+- **Frontend**: Modern responsive interface with Bootstrap and custom JavaScript
+- **Model Integration**: Direct integration with gpt-oss-20b using optimized Metal backend
+- **Deployment**: Supports both local development and cloud deployment (demo mode)
 
 ### Highlights
 
