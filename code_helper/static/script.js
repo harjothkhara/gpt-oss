@@ -24,14 +24,14 @@ for i in range(10):
     def deposit(self, amount):
         if amount > 0:
             self.balance += amount
-            self.transaction_history.append(f"Deposited ${amount}")
+            self.transaction_history.append(f"Deposited $" + str(amount))
             return True
         return False
 
     def withdraw(self, amount):
         if 0 < amount <= self.balance:
             self.balance -= amount
-            self.transaction_history.append(f"Withdrew ${amount}")
+            self.transaction_history.append(f"Withdrew $" + str(amount))
             return True
         return False
 
@@ -42,7 +42,7 @@ for i in range(10):
 account = BankAccount("John Doe", 1000)
 account.deposit(500)
 account.withdraw(200)
-print(f"Balance: ${account.get_balance()}")`
+print(f"Balance: $" + str(account.get_balance()))`
     },
 
     javascript: {
@@ -79,6 +79,55 @@ console.log("Sorted array:", bubbleSort([...numbers]));`
 
 // DOM elements
 let codeForm, codeTextarea, languageSelect, analysisTypeSelect, analyzeBtn, loadingModal;
+
+// Function to aggressively hide loading modal
+function hideLoadingModal() {
+    console.log('Hiding loading modal...');
+
+    // Find modal element - try multiple approaches
+    let modalElement = null;
+
+    // Try to get the actual DOM element from Bootstrap modal
+    if (loadingModal && loadingModal._element) {
+        modalElement = loadingModal._element;
+    } else {
+        modalElement = document.getElementById('loadingModal');
+    }
+
+    // Force hide modal using multiple methods
+    if (modalElement && modalElement.style) {
+        modalElement.style.display = 'none';
+        modalElement.style.visibility = 'hidden';
+        modalElement.classList.remove('show', 'fade');
+        modalElement.setAttribute('aria-hidden', 'true');
+    }
+
+    // Try Bootstrap modal hide method
+    if (loadingModal && typeof loadingModal.hide === 'function') {
+        try {
+            loadingModal.hide();
+        } catch (e) {
+            console.log('Modal hide method failed:', e);
+        }
+    }
+
+    // Remove all modal backdrops
+    document.querySelectorAll('.modal-backdrop').forEach(el => {
+        try {
+            el.remove();
+        } catch (e) {
+            console.log('Error removing backdrop:', e);
+        }
+    });
+
+    // Reset body
+    document.body.classList.remove('modal-open');
+    document.body.style.overflow = '';
+    document.body.style.paddingRight = '';
+    document.body.style.marginRight = '';
+
+    console.log('Loading modal hidden');
+}
 
 // Initialize when DOM is loaded
 document.addEventListener('DOMContentLoaded', function() {
@@ -117,6 +166,12 @@ function setupEventListeners() {
         codeTextarea.addEventListener('keydown', handleCodeInput);
         codeTextarea.addEventListener('input', validateCode);
     }
+
+    // Clear code button
+    const clearCodeBtn = document.getElementById('clearCodeBtn');
+    if (clearCodeBtn) {
+        clearCodeBtn.addEventListener('click', clearCode);
+    }
 }
 
 function setupFormValidation() {
@@ -151,26 +206,70 @@ function handleFormSubmit(event) {
         return response.text();
     })
     .then(html => {
-        // Replace the page content with the response
-        document.documentElement.innerHTML = html;
+        console.log('Analysis complete, received HTML response');
+        console.log('Response length:', html.length);
+        console.log('Response preview:', html.substring(0, 200));
 
-        // Reinitialize after content replacement
+        // Clear timer first
+        if (loadingTimer) {
+            clearTimeout(loadingTimer);
+            loadingTimer = null;
+        }
+
+        // Hide loading modal immediately
+        hideLoadingModal();
+
+        // Small delay to ensure modal is fully hidden
         setTimeout(() => {
-            initializeElements();
-            setupEventListeners();
-            setupFormValidation();
+            // Replace the page content with the response
+            try {
+                // Parse the HTML response to extract just the body content
+                const parser = new DOMParser();
+                const doc = parser.parseFromString(html, 'text/html');
+                const newBody = doc.body;
 
-            // Trigger syntax highlighting
-            if (typeof Prism !== 'undefined') {
-                Prism.highlightAll();
+                if (newBody) {
+                    // Replace body content
+                    document.body.innerHTML = newBody.innerHTML;
+                    console.log('Page content replaced successfully');
+                } else {
+                    console.error('No body found in response HTML');
+                    throw new Error('Invalid HTML response');
+                }
+            } catch (error) {
+                console.error('Error replacing page content:', error);
+                showError('Failed to display analysis results. Please try again.');
+                return;
             }
 
-            // Add fade-in animation to results
-            const resultCard = document.querySelector('.card .bg-success');
-            if (resultCard) {
-                resultCard.closest('.card').classList.add('fade-in');
-            }
-        }, 100);
+            // Clean up any modal remnants after page replacement
+            setTimeout(() => {
+                const allBackdrops = document.querySelectorAll('.modal-backdrop');
+                allBackdrops.forEach(backdrop => backdrop.remove());
+                document.body.classList.remove('modal-open');
+                document.body.style.overflow = '';
+                document.body.style.paddingRight = '';
+                document.body.style.marginRight = '';
+
+                // Reinitialize after content replacement
+                initializeElements();
+                setupEventListeners();
+                setupFormValidation();
+
+                // Trigger syntax highlighting
+                if (typeof Prism !== 'undefined') {
+                    Prism.highlightAll();
+                }
+
+                // Add fade-in animation to results
+                const resultCard = document.querySelector('.card .bg-success');
+                if (resultCard) {
+                    resultCard.closest('.card').classList.add('fade-in');
+                }
+
+                console.log('Page reinitialized successfully');
+            }, 100);
+        }, 100); // End of setTimeout for modal hiding delay
     })
     .catch(error => {
         console.error('Error:', error);
@@ -181,36 +280,7 @@ function handleFormSubmit(event) {
     });
 }
 
-// Load example code
-function loadExample(language, exampleType) {
-    if (codeExamples[language] && codeExamples[language][exampleType]) {
-        // Set language
-        if (languageSelect) {
-            languageSelect.value = language;
-        }
 
-        // Set code
-        if (codeTextarea) {
-            codeTextarea.value = codeExamples[language][exampleType];
-        }
-
-        // Set analysis type to explanation for examples
-        if (analysisTypeSelect) {
-            analysisTypeSelect.value = 'explanation';
-        }
-
-        // Validate form
-        validateForm();
-
-        // Add visual feedback
-        if (codeTextarea) {
-            codeTextarea.classList.add('slide-up');
-            setTimeout(() => {
-                codeTextarea.classList.remove('slide-up');
-            }, 300);
-        }
-    }
-}
 
 // Utility functions
 function validateForm() {
@@ -283,6 +353,30 @@ function setFieldError(field, message) {
     }
 }
 
+function clearCode() {
+    if (codeTextarea) {
+        // Clear the textarea
+        codeTextarea.value = '';
+
+        // Clear any validation states
+        codeTextarea.classList.remove('is-invalid', 'is-valid');
+        const feedback = codeTextarea.parentNode.querySelector('.invalid-feedback');
+        if (feedback) {
+            feedback.remove();
+        }
+
+        // Focus back to textarea for immediate typing
+        codeTextarea.focus();
+
+        // Trigger validation to update form state
+        validateForm();
+
+        console.log('Code textarea cleared');
+    }
+}
+
+let loadingTimer = null;
+
 function showLoading() {
     if (loadingModal) {
         loadingModal.show();
@@ -292,17 +386,87 @@ function showLoading() {
         analyzeBtn.disabled = true;
         analyzeBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Analyzing...';
     }
+
+    // Set 3-second timer as backup
+    loadingTimer = setTimeout(() => {
+        console.log('3-second timer: Force hiding loading modal');
+        forceHideLoading();
+    }, 3000);
+
+    // Also start checking for results
+    startResultsDetection();
 }
 
 function hideLoading() {
-    if (loadingModal) {
-        loadingModal.hide();
+    // Clear the timer if it exists
+    if (loadingTimer) {
+        clearTimeout(loadingTimer);
+        loadingTimer = null;
     }
 
-    if (analyzeBtn) {
-        analyzeBtn.disabled = false;
-        analyzeBtn.innerHTML = '<i class="fas fa-magic"></i> Analyze Code';
+    forceHideLoading();
+}
+
+function forceHideLoading() {
+    console.log('Force hiding loading modal');
+
+    // Find loading modal (might be different after page replacement)
+    const modal = loadingModal || document.getElementById('loadingModal');
+    if (modal) {
+        // Try Bootstrap modal hide method first
+        if (modal.hide && typeof modal.hide === 'function') {
+            modal.hide();
+        } else {
+            // Fallback to manual hiding
+            modal.style.display = 'none';
+            modal.classList.remove('show');
+        }
+
+        // Remove any Bootstrap modal backdrop
+        const backdrop = document.querySelector('.modal-backdrop');
+        if (backdrop) {
+            backdrop.remove();
+        }
+
+        // Reset body classes that Bootstrap modal adds
+        document.body.classList.remove('modal-open');
+        document.body.style.overflow = '';
+        document.body.style.paddingRight = '';
     }
+
+    // Reset button state
+    const btn = analyzeBtn || document.querySelector('button[type="submit"]');
+    if (btn) {
+        btn.disabled = false;
+        btn.innerHTML = '<i class="fas fa-magic"></i> Analyze Code';
+    }
+}
+
+function startResultsDetection() {
+    let checkCount = 0;
+    const maxChecks = 30; // Check for 3 seconds (100ms intervals)
+
+    const checkForResults = () => {
+        checkCount++;
+
+        // Look for analysis results on the page
+        const resultsCard = document.querySelector('.card .bg-success');
+        const analysisContent = document.querySelector('.card-body p, .card-body div');
+
+        if (resultsCard || (analysisContent && analysisContent.textContent.includes('What this code actually does'))) {
+            console.log('Results detected! Hiding loading modal');
+            forceHideLoading();
+            return;
+        }
+
+        // Continue checking if we haven't reached max checks
+        if (checkCount < maxChecks) {
+            setTimeout(checkForResults, 100);
+        }
+    };
+
+    // Start checking after a brief delay
+    setTimeout(checkForResults, 200);
 }
 
 function showError(message) {
@@ -362,6 +526,46 @@ function validateCode() {
     // Real-time code validation could be added here
     // For now, just trigger form validation
     validateForm();
+}
+
+// Load example code function - defined at the end to ensure codeExamples is available
+function loadExample(language, exampleType) {
+    console.log('loadExample called with:', language, exampleType);
+
+    if (codeExamples[language] && codeExamples[language][exampleType]) {
+        console.log('Found example code');
+
+        // Set language
+        if (languageSelect) {
+            languageSelect.value = language;
+        }
+
+        // Set code
+        if (codeTextarea) {
+            codeTextarea.value = codeExamples[language][exampleType];
+        }
+
+        // Set analysis type to explanation for examples
+        if (analysisTypeSelect) {
+            analysisTypeSelect.value = 'explanation';
+        }
+
+        // Validate form
+        if (typeof validateForm === 'function') {
+            validateForm();
+        }
+
+        // Add visual feedback
+        if (codeTextarea) {
+            codeTextarea.classList.add('slide-up');
+            setTimeout(() => {
+                codeTextarea.classList.remove('slide-up');
+            }, 300);
+        }
+    } else {
+        console.error('Example not found:', language, exampleType);
+        console.log('Available examples:', codeExamples);
+    }
 }
 
 // Make loadExample globally available
