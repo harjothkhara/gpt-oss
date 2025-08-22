@@ -1,0 +1,15 @@
+# Core dependencies for Interactive Code Helper
+fastapi>=0.116.1
+uvicorn>=0.35.0
+jinja2>=3.1.0
+python-multipart>=0.0.6
+
+# For code analysis and formatting
+pygments>=2.17.0
+black>=24.0.0
+
+# For async operations
+aiofiles>=24.1.0
+
+# For the gpt-oss integration (install separately with Metal backend)
+# gpt-oss[metal] - install with: GPTOSS_BUILD_METAL=1 pip install -e ".[metal]"

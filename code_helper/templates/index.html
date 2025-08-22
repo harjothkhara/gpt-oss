@@ -1,0 +1,212 @@
+{% extends "base.html" %}
+
+{% block title %}Interactive Code Helper - Learn Programming with AI{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-lg-12">
+        <div class="hero-section text-center mb-5">
+            <h1 class="display-4 text-primary">Interactive Code Helper</h1>
+            <p class="lead">
+                Learn programming with AI-powered code analysis, explanations, and improvements.
+                Powered by <strong>gpt-oss-20b</strong> running locally on your machine.
+            </p>
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <!-- Input Section -->
+    <div class="col-lg-6">
+        <div class="card shadow-sm">
+            <div class="card-header bg-primary text-white">
+                <h5 class="mb-0"><i class="fas fa-edit"></i> Code Input</h5>
+            </div>
+            <div class="card-body">
+                <form id="codeForm" method="post" action="/analyze">
+                    <div class="mb-3">
+                        <label for="language" class="form-label">Programming Language</label>
+                        <select class="form-select" id="language" name="language" required>
+                            <option value="">Select a language...</option>
+                            {% for lang in supported_languages %}
+                            <option value="{{ lang }}" {% if language == lang %}selected{% endif %}>
+                                {{ lang.title() }}
+                            </option>
+                            {% endfor %}
+                        </select>
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="analysis_type" class="form-label">Analysis Type</label>
+                        <select class="form-select" id="analysis_type" name="analysis_type" required>
+                            <option value="">Select analysis type...</option>
+                            {% for type in analysis_types %}
+                            <option value="{{ type }}" {% if analysis_type == type %}selected{% endif %}>
+                                {{ type.replace('_', ' ').title() }}
+                            </option>
+                            {% endfor %}
+                        </select>
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="user_level" class="form-label">Your Programming Level</label>
+                        <select class="form-select" id="user_level" name="user_level">
+                            <option value="beginner" {% if user_level == 'beginner' %}selected{% endif %}>Beginner</option>
+                            <option value="intermediate" {% if user_level == 'intermediate' %}selected{% endif %}>Intermediate</option>
+                            <option value="advanced" {% if user_level == 'advanced' %}selected{% endif %}>Advanced</option>
+                        </select>
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="code" class="form-label">Your Code</label>
+                        <textarea
+                            class="form-control code-input"
+                            id="code"
+                            name="code"
+                            rows="12"
+                            placeholder="Paste your code here..."
+                            required
+                        >{{ code if code else '' }}</textarea>
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="specific_question" class="form-label">Specific Question (Optional)</label>
+                        <input
+                            type="text"
+                            class="form-control"
+                            id="specific_question"
+                            name="specific_question"
+                            placeholder="Ask a specific question about your code..."
+                            value="{{ specific_question if specific_question else '' }}"
+                        >
+                    </div>
+
+                    <div class="d-grid">
+                        <button type="submit" class="btn btn-primary btn-lg" id="analyzeBtn">
+                            <i class="fas fa-magic"></i> Analyze Code
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <!-- Example Code Section -->
+        <div class="card shadow-sm mt-4">
+            <div class="card-header bg-info text-white">
+                <h6 class="mb-0"><i class="fas fa-lightbulb"></i> Try These Examples</h6>
+            </div>
+            <div class="card-body">
+                <div class="example-buttons">
+                    <button class="btn btn-outline-info btn-sm me-2 mb-2" onclick="loadExample('python', 'fibonacci')">
+                        Python Fibonacci
+                    </button>
+                    <button class="btn btn-outline-info btn-sm me-2 mb-2" onclick="loadExample('javascript', 'sorting')">
+                        JavaScript Sorting
+                    </button>
+                    <button class="btn btn-outline-info btn-sm me-2 mb-2" onclick="loadExample('python', 'class')">
+                        Python Class
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Results Section -->
+    <div class="col-lg-6">
+        {% if result %}
+        <div class="card shadow-sm">
+            <div class="card-header bg-success text-white">
+                <h5 class="mb-0"><i class="fas fa-check-circle"></i> Analysis Results</h5>
+            </div>
+            <div class="card-body">
+                {% if result.error %}
+                <div class="alert alert-danger">
+                    <strong>Error:</strong> {{ result.error }}
+                </div>
+                {% else %}
+                <!-- Analysis -->
+                <div class="mb-4">
+                    <h6 class="text-primary"><i class="fas fa-search"></i> Analysis</h6>
+                    <div class="analysis-content">
+                        {{ result.analysis | safe }}
+                    </div>
+                </div>
+
+                <!-- Suggestions -->
+                {% if result.suggestions %}
+                <div class="mb-4">
+                    <h6 class="text-warning"><i class="fas fa-lightbulb"></i> Suggestions</h6>
+                    <ul class="list-group list-group-flush">
+                        {% for suggestion in result.suggestions %}
+                        <li class="list-group-item">{{ suggestion }}</li>
+                        {% endfor %}
+                    </ul>
+                </div>
+                {% endif %}
+
+                <!-- Examples -->
+                {% if result.examples %}
+                <div class="mb-4">
+                    <h6 class="text-info"><i class="fas fa-code"></i> Examples</h6>
+                    {% for example in result.examples %}
+                    <pre><code class="language-{{ language }}">{{ example }}</code></pre>
+                    {% endfor %}
+                </div>
+                {% endif %}
+
+                <!-- Execution Result -->
+                {% if result.execution_result %}
+                <div class="mb-4">
+                    <h6 class="text-success"><i class="fas fa-play"></i> Execution Result</h6>
+                    <pre class="bg-light p-3 rounded"><code>{{ result.execution_result }}</code></pre>
+                </div>
+                {% endif %}
+                {% endif %}
+            </div>
+        </div>
+        {% else %}
+        <div class="card shadow-sm">
+            <div class="card-header bg-secondary text-white">
+                <h5 class="mb-0"><i class="fas fa-info-circle"></i> How to Use</h5>
+            </div>
+            <div class="card-body">
+                <ol>
+                    <li><strong>Select a programming language</strong> from the dropdown</li>
+                    <li><strong>Choose an analysis type:</strong>
+                        <ul class="mt-2">
+                            <li><strong>Explanation:</strong> Get detailed explanations of how your code works</li>
+                            <li><strong>Improvement:</strong> Receive suggestions to make your code better</li>
+                            <li><strong>Bug Detection:</strong> Find and fix potential issues</li>
+                            <li><strong>Learning:</strong> Interactive tutorials and exercises</li>
+                        </ul>
+                    </li>
+                    <li><strong>Set your programming level</strong> for appropriate explanations</li>
+                    <li><strong>Paste your code</strong> in the text area</li>
+                    <li><strong>Ask a specific question</strong> (optional)</li>
+                    <li><strong>Click "Analyze Code"</strong> and wait for AI-powered insights!</li>
+                </ol>
+
+                <div class="alert alert-info mt-3">
+                    <strong>Tip:</strong> Try the example buttons to see the system in action!
+                </div>
+            </div>
+        </div>
+        {% endif %}
+    </div>
+</div>
+
+<!-- Loading Modal -->
+<div class="modal fade" id="loadingModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-body text-center">
+                <div class="spinner-border text-primary" role="status">
+                    <span class="visually-hidden">Loading...</span>
+                </div>
+                <p class="mt-3">Analyzing your code with gpt-oss-20b...</p>
+                <small class="text-muted">This may take a few moments</small>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
