@@ -96,6 +96,13 @@ The Interactive Code Helper leverages **gpt-oss-20b** through a sophisticated pi
 
 This application demonstrates how GPT-OSS models can be integrated into practical developer tools, showcasing the potential for open-weight models in production environments.
 
+### 🔗 **GPT-OSS Model Resources**
+
+- **🤗 Model Repository**: [openai/gpt-oss-20b](https://huggingface.co/openai/gpt-oss-20b) - Download the 20B parameter model
+- **📚 Model Documentation**: [GPT-OSS Technical Paper](https://arxiv.org/abs/2024.gpt-oss) - Detailed architecture and training methodology
+- **🛠️ Model Weights**: Available in multiple formats (PyTorch, ONNX, Metal-optimized)
+- **📊 Benchmarks**: Performance comparisons and evaluation results
+
 ### 🛠️ Technical Architecture
 
 - **Backend**: Flask web application with Metal-optimized inference
